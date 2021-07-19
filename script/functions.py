@@ -1,5 +1,7 @@
 import json
 import pyproj
+from urllib.parse import unquote, urlencode
+from owslib.wmts import WebMapTileService
 from typing import List, Tuple
 
 
@@ -46,3 +48,28 @@ def convert_coord(x: float, y: float,
         return coord[1], coord[0]
     else:
         return coord[0], coord[1]
+
+
+def get_ign_request() -> str:
+
+    WMTS_URL_GETCAP = "https://wxs.ign.fr/pratique/geoportail/wmts?"\
+        "SERVICE%3DWMTS%26REQUEST%3DGetCapabilities"
+    WMTS = WebMapTileService(WMTS_URL_GETCAP)
+    LAYER_NAME = "ORTHOIMAGERY.ORTHOPHOTOS"
+    WMTS_LAYER = WMTS[LAYER_NAME]
+    LAYER_TITLE = WMTS_LAYER.title
+    WMTS_URL_PARAMS = {
+        "SERVICE": "WMTS",
+        "VERSION": "1.0.0",
+        "REQUEST": "GetCapabilities",
+        "layers": LAYER_NAME,
+        "crs": "EPSG:3857",
+        "format": "image/jpeg",
+        "styles": "normal",
+        "tileMatrixSet": "PM",
+        "tileMatrix": "21",
+        "url": WMTS_URL_GETCAP
+    }
+    WMTS_URL_FINAL = unquote(urlencode(WMTS_URL_PARAMS))
+
+    return WMTS_URL_FINAL

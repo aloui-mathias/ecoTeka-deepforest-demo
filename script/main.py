@@ -3,7 +3,8 @@ import argparse
 from functions import (
     get_polygon,
     get_tile_coord_from_polygon,
-    convert_coord
+    convert_coord,
+    get_ign_request
 )
 
 
@@ -26,3 +27,5 @@ osm_coords = get_tile_coord_from_polygon(polygon)
 
 xmin, ymin = convert_coord(osm_coords[0], osm_coords[1], 4326, 3857)
 xmax, ymax = convert_coord(osm_coords[2], osm_coords[3], 4326, 3857)
+
+url_request = get_ign_request()
