@@ -1,5 +1,6 @@
 import json
-from typing import List
+import pyproj
+from typing import List, Tuple
 
 
 def get_polygon(geojson_path: str) -> List:
@@ -25,3 +26,23 @@ def get_tile_coord_from_polygon(polygon):
         ymin = point[1] if point[1] < ymin else ymin
         ymax = point[1] if point[1] > ymax else ymax
     return xmin, ymin, xmax, ymax
+
+
+def convert_coord(x: float, y: float,
+                  input_epsg: int,
+                  output_epsg: int) -> Tuple[float]:
+
+    input_crs = pyproj.CRS.from_epsg(input_epsg)
+    output_crs = pyproj.CRS.from_epsg(output_epsg)
+
+    proj = pyproj.Transformer.from_crs(input_crs, output_crs)
+
+    if input_crs.is_geographic and not output_crs.is_geographic:
+        coord = proj.transform(y, x)
+    else:
+        coord = proj.transform(x, y)
+
+    if output_crs.is_geographic and not input_crs.is_geographic:
+        return coord[1], coord[0]
+    else:
+        return coord[0], coord[1]
