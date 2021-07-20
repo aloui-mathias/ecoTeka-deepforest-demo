@@ -4,7 +4,8 @@ from functions import (
     get_polygon,
     get_tile_coord_from_polygon,
     convert_coord,
-    get_ign_request
+    get_ign_request,
+    render_image
 )
 
 
@@ -19,6 +20,16 @@ parser.add_argument(
     type=str,
     default=default_geojson
 )
+default_tiff = "data/image.tiff"
+parser.add_argument(
+    "--tiff",
+    help=(
+        "use to change the path of the generated tiff file "
+        + ""
+        + f"(default: {default_tiff})"),
+    type=str,
+    default=default_tiff
+)
 args = parser.parse_args()
 
 polygon = get_polygon(args.geojson)
@@ -29,3 +40,11 @@ xmin, ymin = convert_coord(osm_coords[0], osm_coords[1], 4326, 3857)
 xmax, ymax = convert_coord(osm_coords[2], osm_coords[3], 4326, 3857)
 
 url_request = get_ign_request()
+
+render_image(
+    url_request,
+    xmin,
+    ymin,
+    xmax,
+    ymax,
+    args.tiff)

@@ -2,18 +2,32 @@ import json
 import pyproj
 from urllib.parse import unquote, urlencode
 from owslib.wmts import WebMapTileService
+from qgis.core import (
+    QgsApplication,
+    QgsProject,
+    QgsRectangle,
+    QgsRasterLayer,
+    QgsMapSettings,
+    QgsMapRendererParallelJob
+)
+from qgis.PyQt.QtGui import QColor
+from qgis.PyQt.QtCore import QSize, QEventLoop
 from typing import List, Tuple
 
 
 def get_polygon(geojson_path: str) -> List:
     try:
-        geojson = json.loads(open(geojson_path, 'r').read())
+        file = open(geojson_path, 'r')
+        file.seek(0)
+        geojson = json.loads(file.read())
     except:
-        return (
-            f"No such file or directory: {geojson_path}\nIf your "
-            + "using the default path, please check you are running "
+        print(
+            "Using the default path, please check you are running "
             + "the script from ecoTeka-deepforest-demo folder."
         )
+        raise
+    finally:
+        file.close()
     return geojson['features'][0]['geometry']['coordinates'][0]
 
 
@@ -73,3 +87,47 @@ def get_ign_request() -> str:
     WMTS_URL_FINAL = unquote(urlencode(WMTS_URL_PARAMS))
 
     return WMTS_URL_FINAL
+
+
+def render_image(
+        request: str,
+        xmin: float,
+        ymin: float,
+        xmax: float,
+        ymax: float,
+        path: str) -> None:
+
+    QGS = QgsApplication([], False)
+    QGS.initQgis()
+    WMTS_LAYER = QgsRasterLayer(
+        request, "raster-layer", "wms")
+    if WMTS_LAYER.isValid():
+        QgsProject.instance().addMapLayer(WMTS_LAYER)
+    else:
+        return WMTS_LAYER.error().message()
+    extent = QgsRectangle(xmin, ymin, xmax, ymax)
+    WMTS_LAYER.setExtent(extent)
+    settings = QgsMapSettings()
+    settings.setLayers([WMTS_LAYER])
+    settings.setBackgroundColor(QColor(255, 255, 255))
+    settings.setOutputSize(QSize(
+        int(extent.width() / 0.25),
+        int(extent.height() / 0.25)
+    ))
+    settings.setExtent(WMTS_LAYER.extent())
+
+    render = QgsMapRendererParallelJob(settings)
+
+    def finished():
+        img = render.renderedImage()
+        img.save(path, "png")
+
+    render.finished.connect(finished)
+
+    render.start()
+
+    loop = QEventLoop()
+    render.finished.connect(loop.quit)
+    loop.exec_()
+
+    QGS.exitQgis()
