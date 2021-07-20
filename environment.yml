@@ -14,6 +14,7 @@ dependencies:
   - matplotlib
   - geopandas
   - rasterio
+  - pip
   - pip:
     - deepforest==1.0.9
   - nomkl
