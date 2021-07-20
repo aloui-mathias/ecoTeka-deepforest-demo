@@ -1,0 +1,19 @@
+name: ecoTeka-DeepForest-Demo
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - owslib
+  - pillow
+  - typing
+  - qgis
+  - pyproj
+  - urllib3
+  - matplotlib
+  - geopandas
+  - rasterio
+  - pip:
+    - deepforest==1.0.9
+  - nomkl
