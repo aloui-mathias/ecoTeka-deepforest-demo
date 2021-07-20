@@ -5,7 +5,8 @@ from functions import (
     get_tile_coord_from_polygon,
     convert_coord,
     get_ign_request,
-    render_image
+    render_image,
+    get_image
 )
 
 
@@ -48,3 +49,5 @@ render_image(
     xmax,
     ymax,
     args.tiff)
+
+image = get_image(args.tiff)

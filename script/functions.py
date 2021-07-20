@@ -1,7 +1,9 @@
 import json
 import pyproj
+import numpy
 from urllib.parse import unquote, urlencode
 from owslib.wmts import WebMapTileService
+from PIL import Image
 from qgis.core import (
     QgsApplication,
     QgsProject,
@@ -131,3 +133,8 @@ def render_image(
     loop.exec_()
 
     QGS.exitQgis()
+
+def get_image(path: str) -> numpy.ndarray:
+    image = Image.open(path, 'r')
+    numpy_rgba = numpy.array(image).astype('float32')
+    numpy_rgb = numpy_rgba[:, :, :3]
