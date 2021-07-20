@@ -137,4 +137,4 @@ def render_image(
 def get_image(path: str) -> numpy.ndarray:
     image = Image.open(path, 'r')
     numpy_rgba = numpy.array(image).astype('float32')
-    numpy_rgb = numpy_rgba[:, :, :3]
+    return numpy_rgba[:, :, :3]
