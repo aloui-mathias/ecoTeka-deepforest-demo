@@ -22,7 +22,7 @@ from qgis.PyQt.QtCore import QSize, QEventLoop
 from typing import List, Optional, Tuple
 
 
-def get_polygon(geojson_path: str) -> List[List[float]]:
+def get_polygons(geojson_path: str) -> List[List[List[float]]]:
     try:
         file = open(geojson_path, 'r', encoding="utf-8")
         file.seek(0)
@@ -34,7 +34,10 @@ def get_polygon(geojson_path: str) -> List[List[float]]:
         )
         raise
     file.close()
-    return geojson['features'][0]['geometry']['coordinates'][0]
+    polygons = []
+    for feature in geojson['features']:
+        polygons.append(feature['geometry']['coordinates'][0])
+    return polygons
 
 
 def get_tile_coord_from_polygon(polygon):
@@ -95,6 +98,16 @@ def get_ign_request() -> str:
     return WMTS_URL_FINAL
 
 
+def start_qgis():
+    QGS = QgsApplication([], False)
+    QGS.initQgis()
+    return QGS
+
+
+def end_qgis(QGS):
+    QGS.exitQgis()
+
+
 def render_image(
         request: str,
         xmin: float,
@@ -104,8 +117,6 @@ def render_image(
         path: str,
         high_resolution: bool) -> None:
 
-    QGS = QgsApplication([], False)
-    QGS.initQgis()
     WMTS_LAYER = QgsRasterLayer(
         request, "raster-layer", "wms")
     if WMTS_LAYER.isValid():
@@ -131,7 +142,7 @@ def render_image(
 
     def finished():
         img = render.renderedImage()
-        img.save(path, "png")
+        img.save(path + ".tiff", "png")
 
     render.finished.connect(finished)
 
@@ -141,13 +152,11 @@ def render_image(
     render.finished.connect(loop.quit)
     loop.exec_()
 
-    QGS.exitQgis()
-
     return
 
 
 def get_image(path: str) -> numpy.ndarray:
-    image = Image.open(path, 'r')
+    image = Image.open(path + ".tiff", 'r')
     numpy_rgba = numpy.array(image).astype('float32')
     return numpy_rgba[:, :, :3]
 
@@ -264,6 +273,6 @@ def save_image_predictions(
     if boxes is not None:
         draw_all_boxes(image_copy, boxes)
 
-    pyplot.imsave(path, image_copy)
+    pyplot.imsave(path + ".png", image_copy)
 
     return

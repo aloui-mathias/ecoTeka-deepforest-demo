@@ -1,7 +1,7 @@
 import argparse
 
 from functions import (
-    get_polygon,
+    get_polygons,
     get_tile_coord_from_polygon,
     convert_coord,
     get_ign_request,
@@ -9,7 +9,9 @@ from functions import (
     get_image,
     convert_polygon,
     predictions,
-    save_image_predictions
+    save_image_predictions,
+    start_qgis,
+    end_qgis
 )
 
 
@@ -30,62 +32,89 @@ parser.add_argument(
     type=str,
     default=default_geojson
 )
-default_tiff = "data/image.tiff"
+default_tiff = "data/image"
 parser.add_argument(
     "--tiff",
     help=(
         "use to change the path of the generated tiff file "
-        + "from the IGN "
+        + "from the IGN without .tiff"
         + f"(default: {default_tiff})"),
     type=str,
     default=default_tiff
 )
-default_png = "data/prediction.png"
-default_tiff = "data/image.tiff"
+default_png = "data/prediction"
 parser.add_argument(
     "--png",
     help=(
         "use to change the path of the generated png file "
-        + "with the detected trees and the polygon "
+        + "with the detected trees and the polygon without .png "
         + f"(default: {default_png})"),
     type=str,
     default=default_png
 )
 args = parser.parse_args()
 
-osm_polygon = get_polygon(args.geojson)
-
-osm_coords = get_tile_coord_from_polygon(osm_polygon)
-
-xmin, ymin = convert_coord(osm_coords[0], osm_coords[1], 4326, 3857)
-xmax, ymax = convert_coord(osm_coords[2], osm_coords[3], 4326, 3857)
+osm_polygons = get_polygons(args.geojson)
 
 url_request = get_ign_request()
 
-render_image(
-    url_request,
-    xmin,
-    ymin,
-    xmax,
-    ymax,
-    args.tiff,
-    args.high_resolution)
+QGS = start_qgis()
 
-image = get_image(args.tiff)
+for index in range(len(osm_polygons)):
 
-image_polygon = convert_polygon(
-    osm_polygon,
-    image,
-    xmin,
-    ymin,
-    xmax,
-    ymax
-)
+    if index == 0:
+        tiff_path = args.tiff
+        png_path = args.png
+    else:
+        tiff_path = args.tiff + str(index)
+        png_path = args.png + str(index)
 
-image_predictions = predictions(image, args.high_resolution)
+    osm_polygon = osm_polygons[index]
 
-save_image_predictions(
-    args.png,
-    image,
-    image_predictions,
-    image_polygon)
+    if len(osm_polygon) < 3:
+        continue
+
+    osm_coords = get_tile_coord_from_polygon(osm_polygon)
+
+    xmin, ymin = convert_coord(
+        osm_coords[0],
+        osm_coords[1],
+        4326,
+        3857
+    )
+    xmax, ymax = convert_coord(
+        osm_coords[2],
+        osm_coords[3],
+        4326,
+        3857
+    )
+
+    render_image(
+        url_request,
+        xmin,
+        ymin,
+        xmax,
+        ymax,
+        tiff_path,
+        args.high_resolution)
+
+    image = get_image(tiff_path)
+
+    image_polygon = convert_polygon(
+        osm_polygon,
+        image,
+        xmin,
+        ymin,
+        xmax,
+        ymax
+    )
+
+    image_predictions = predictions(image, args.high_resolution)
+
+    save_image_predictions(
+        png_path,
+        image,
+        image_predictions,
+        image_polygon)
+
+end_qgis(QGS)
