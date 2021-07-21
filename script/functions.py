@@ -33,8 +33,7 @@ def get_polygon(geojson_path: str) -> List[List[float]]:
             + "the script from ecoTeka-deepforest-demo folder."
         )
         raise
-    finally:
-        file.close()
+    file.close()
     return geojson['features'][0]['geometry']['coordinates'][0]
 
 
