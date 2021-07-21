@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser()
 default_geojson = "data/export.geojson"
 parser.add_argument(
     "--high-resolution",
-    help="can be used if 10 centimeters per pixel resolution"
+    help="can be used if 10 centimeters per pixel resolution "
     + "is available.",
     action="store_true"
 )
@@ -35,7 +35,7 @@ parser.add_argument(
     "--tiff",
     help=(
         "use to change the path of the generated tiff file "
-        + "from the IGN"
+        + "from the IGN "
         + f"(default: {default_tiff})"),
     type=str,
     default=default_tiff
@@ -46,7 +46,7 @@ parser.add_argument(
     "--png",
     help=(
         "use to change the path of the generated png file "
-        + "with the detected trees and the polygon"
+        + "with the detected trees and the polygon "
         + f"(default: {default_png})"),
     type=str,
     default=default_png
