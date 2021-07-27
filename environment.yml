@@ -1,4 +1,4 @@
-name: ecoTeka-DeepForest-Demo
+name: ecoteka-deepforest-demo
 channels:
   - pytorch
   - conda-forge
