@@ -152,6 +152,8 @@ def render_image(
     render.finished.connect(loop.quit)
     loop.exec_()
 
+    del render
+
     return
 
 
