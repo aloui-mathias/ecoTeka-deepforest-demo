@@ -274,6 +274,7 @@ def save_image_predictions(
 
     if boxes is not None:
         draw_all_boxes(image_copy, boxes)
+    print(str(len(boxes)) + " predictions inside")
 
     pyplot.imsave(path + ".png", image_copy)
 
