@@ -75,7 +75,7 @@ def convert_coord(x: float, y: float,
 
 def get_ign_request() -> str:
 
-    WMTS_URL_GETCAP = "https://wxs.ign.fr/pratique/geoportail/wmts?"\
+    WMTS_URL_GETCAP = "https://wxs.ign.fr/decouverte/geoportail/wmts?"\
         "SERVICE%3DWMTS%26REQUEST%3DGetCapabilities"
     WMTS = WebMapTileService(WMTS_URL_GETCAP)
     LAYER_NAME = "ORTHOIMAGERY.ORTHOPHOTOS"
@@ -151,6 +151,8 @@ def render_image(
     loop = QEventLoop()
     render.finished.connect(loop.quit)
     loop.exec_()
+
+    del render
 
     return
 
@@ -272,6 +274,7 @@ def save_image_predictions(
 
     if boxes is not None:
         draw_all_boxes(image_copy, boxes)
+    print(str(len(boxes)) + " predictions inside")
 
     pyplot.imsave(path + ".png", image_copy)
 
