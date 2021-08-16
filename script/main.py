@@ -60,7 +60,9 @@ url_request = get_ign_request()
 
 QGS = start_qgis()
 
-for index in range(len(osm_polygons)):
+length = len(osm_polygons)
+
+for index in range(length):
 
     if index == 0:
         tiff_path = args.tiff
@@ -108,6 +110,8 @@ for index in range(len(osm_polygons)):
         xmax,
         ymax
     )
+
+    print(f'Zone ' + str(index + 1) + ' sur ' + str(length) + ' :')
 
     image_predictions = predictions(image, args.high_resolution)
 
