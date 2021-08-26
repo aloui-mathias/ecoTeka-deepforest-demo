@@ -2,6 +2,7 @@ import argparse
 
 from functions import (
     get_polygons,
+    save_polygon,
     get_tile_coord_from_polygon,
     convert_coord,
     get_ign_request,
@@ -64,7 +65,7 @@ length = len(osm_polygons)
 
 for index in range(length):
 
-    if index == 0:
+    if length == 1:
         tiff_path = args.tiff
         png_path = args.png
     else:
@@ -110,6 +111,8 @@ for index in range(length):
         xmax,
         ymax
     )
+
+    save_polygon(image_polygon, tiff_path)
 
     print(f'Zone ' + str(index + 1) + ' sur ' + str(length) + ' :')
 

@@ -40,6 +40,19 @@ def get_polygons(geojson_path: str) -> List[List[List[float]]]:
     return polygons
 
 
+def save_polygon(polygon, name):
+    output = {}
+    points = []
+    for coords in polygon:
+        point = {}
+        point["x"] = str(coords[0])
+        point["y"] = str(coords[1])
+        points.append(point)
+    output["points"] = points
+    with open(name+"-polygon.geojson", "w") as file:
+        json.dump(output, file)
+
+
 def get_tile_coord_from_polygon(polygon):
     xmin = polygon[0][0]
     xmax = polygon[0][0]
