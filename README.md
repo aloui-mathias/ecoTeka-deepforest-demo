@@ -75,6 +75,12 @@ The file prediction.png in docs is the result of the second command :
 
 ![Figure_1](docs/prediction.png)
 
+## Video
+
+
+https://user-images.githubusercontent.com/43454650/130976174-e71861e7-7cb0-47df-81ed-7ca6e9596125.mp4
+
+
 ## Development known issues
 
 - The Qt application in QGIS can have troubles depending on your display settings. If you have an error with :
