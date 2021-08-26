@@ -78,7 +78,7 @@ The file prediction.png in docs is the result of the second command :
 ## Video
 
 
-https://user-images.githubusercontent.com/43454650/130976174-e71861e7-7cb0-47df-81ed-7ca6e9596125.mp4
+https://user-images.githubusercontent.com/43454650/130976514-19a539eb-a68a-482f-8e46-ae128092308f.mp4
 
 
 ## Development known issues
