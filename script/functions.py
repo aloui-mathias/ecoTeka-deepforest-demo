@@ -182,7 +182,8 @@ def convert_polygon(
         xmin: float,
         ymin: float,
         xmax: float,
-        ymax: float) -> List:
+        ymax: float,
+        epsg: int) -> List:
 
     polygon_image = []
     width_ign = image.shape[1]
@@ -190,7 +191,7 @@ def convert_polygon(
 
     for index in range(len(polygon)):
         coord = polygon[index]
-        coord_ign = convert_coord(coord[0], coord[1], 4326, 3857)
+        coord_ign = convert_coord(coord[0], coord[1], epsg, 3857)
         point = ((coord_ign[0] - xmin)*(width_ign/(xmax-xmin)),
                  (ymax - coord_ign[1])*(height_ign/(ymax-ymin)))
         polygon_image.append(point)

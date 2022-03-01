@@ -20,8 +20,8 @@ parser = argparse.ArgumentParser()
 default_geojson = "data/export.geojson"
 parser.add_argument(
     "--high-resolution",
-    help="can be used if 10 centimeters per pixel resolution "
-    + "is available.",
+    help=("can be used if 10 centimeters per pixel resolution "
+    + "is available."),
     action="store_true"
 )
 parser.add_argument(
@@ -53,6 +53,13 @@ parser.add_argument(
     type=str,
     default=default_png
 )
+parser.add_argument(
+    "--epsg",
+    help=("use to convert the coordiantes from one EPSG to "
+    + "EPSG:3857"),
+    type=int,
+    default=4326
+)
 args = parser.parse_args()
 
 osm_polygons = get_polygons(args.geojson)
@@ -82,13 +89,13 @@ for index in range(length):
     xmin, ymin = convert_coord(
         osm_coords[0],
         osm_coords[1],
-        4326,
+        args.epsg,
         3857
     )
     xmax, ymax = convert_coord(
         osm_coords[2],
         osm_coords[3],
-        4326,
+        args.epsg,
         3857
     )
 
@@ -109,7 +116,8 @@ for index in range(length):
         xmin,
         ymin,
         xmax,
-        ymax
+        ymax,
+        args.epsg
     )
 
     save_polygon(image_polygon, tiff_path)
