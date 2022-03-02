@@ -20,6 +20,7 @@ from qgis.core import (
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import QSize, QEventLoop
 from typing import List, Optional, Tuple
+import tifffile
 
 
 def get_polygons(geojson_path: str) -> List[List[List[float]]]:
@@ -36,7 +37,8 @@ def get_polygons(geojson_path: str) -> List[List[List[float]]]:
     file.close()
     polygons = []
     for feature in geojson['features']:
-        polygons.append(feature['geometry']['coordinates'][0])
+        if feature['geometry']['type'] == "Polygon":
+            polygons.append(feature['geometry']['coordinates'][0])
     return polygons
 
 
@@ -290,6 +292,6 @@ def save_image_predictions(
         draw_all_boxes(image_copy, boxes)
     print(str(len(boxes)) + " predictions inside")
 
-    pyplot.imsave(path + ".png", image_copy)
+    tifffile.imwrite(path + ".tiff", image_copy)
 
     return

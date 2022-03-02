@@ -15,6 +15,8 @@ from functions import (
     end_qgis
 )
 
+import PIL
+PIL.Image.MAX_IMAGE_PIXELS = None
 
 parser = argparse.ArgumentParser()
 default_geojson = "data/export.geojson"
@@ -43,15 +45,15 @@ parser.add_argument(
     type=str,
     default=default_tiff
 )
-default_png = "data/prediction"
+default_out = "data/image-prediction"
 parser.add_argument(
-    "--png",
+    "--out",
     help=(
-        "use to change the path of the generated png file "
-        + "with the detected trees and the polygon without .png "
-        + f"(default: {default_png})"),
+        "use to change the path of the generated tiff file "
+        + "with the detected trees and the polygon without .tiff "
+        + f"(default: {default_out})"),
     type=str,
-    default=default_png
+    default=default_out
 )
 parser.add_argument(
     "--epsg",
@@ -74,10 +76,10 @@ for index in range(length):
 
     if length == 1:
         tiff_path = args.tiff
-        png_path = args.png
+        out_path = args.out
     else:
         tiff_path = args.tiff + str(index)
-        png_path = args.png + str(index)
+        out_path = args.out + str(index)
 
     osm_polygon = osm_polygons[index]
 
@@ -127,7 +129,7 @@ for index in range(length):
     image_predictions = predictions(image, args.high_resolution)
 
     save_image_predictions(
-        png_path,
+        out_path,
         image,
         image_predictions,
         image_polygon)

@@ -57,7 +57,7 @@ out body;
 out skel qt;
 ```
 
-If you multiple features (with the above request multiple parks), the script will run on each feature with one .tiff and one .png per feature.
+If you multiple features (with the above request multiple parks), the script will run on each feature with two .tiff (image and image-prediction) per feature.
 
 ## Example
 
@@ -71,9 +71,9 @@ python script/main.py --geojson docs/export.geojson
 python script/main.py --geojson docs/export.geojson --high-resolution
 ```
 
-The file prediction.png in docs is the result of the second command :
+The file image-prediction.tiff in docs is the result of the second command (here the png version) :
 
-![Figure_1](docs/prediction.png)
+![Figure_1](docs/image-prediction.png)
 
 ## Video
 
