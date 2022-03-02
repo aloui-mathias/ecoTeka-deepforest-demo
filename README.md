@@ -71,9 +71,9 @@ python script/main.py --geojson docs/export.geojson
 python script/main.py --geojson docs/export.geojson --high-resolution
 ```
 
-The file prediction.png in docs is the result of the second command :
+The file prediction.png in docs is the result of the second command (here the png version) :
 
-![Figure_1](docs/prediction.png)
+![Figure_1](docs/image-prediction.png)
 
 ## Video
 
