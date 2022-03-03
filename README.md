@@ -1,10 +1,10 @@
 # Demo for ecoTeka DeepForest
 
-This project is a deminstration of DeepForest (https://github.com/weecology/DeepForest) capabilities with IGN Orthoimagery. The goal is to show the potential of DeepForest for tree detection in urban area with aerial images from the open and free IGN data.
+This project is a demonstration of DeepForest (https://github.com/weecology/DeepForest) capabilities with IGN Orthoimagery. The goal is to show the potential of DeepForest for tree detection in urban area with aerial images from the open and free IGN data.
 
 ## Linked projects
 
-This project use a custom script access the IGN data base :
+This project use a custom script to access the IGN data base :
 
 https://github.com/aloui-mathias/pyqgis_IGN_WMTS
 
@@ -57,7 +57,17 @@ out body;
 out skel qt;
 ```
 
-If you multiple features (with the above request multiple parks), the script will run on each feature with two .tiff (image and image-prediction) per feature.
+## Output
+
+- one .json with the coordinates of the polygon projected on the image.
+
+- two .tiff with the image from the IGN with and without the predictions
+
+- two .pgn which are the compressed version of the .tiff
+
+- one .csv with the predictions projected on the image
+
+If you have multiple features (with the previous request multiple parks), the script will run on each feature and you will have these 5 files for each feature and also a .gejson with only the selected feature.
 
 ## Example
 
@@ -65,15 +75,15 @@ You can run the example in docs :
 
 ```
 # Command to run the script
-python script/main.py --geojson docs/export.geojson
+python script/main.py --example
 
 # High resolution is vailable for the example
-python script/main.py --geojson docs/export.geojson --high-resolution
+python script/main.py --example --high-resolution
 ```
 
-The file image-prediction.tiff in docs is the result of the second command (here the png version) :
+The files in docs are the results of the above command and here is the .png :
 
-![Figure_1](docs/image-prediction.png)
+![Figure_1](docs/image-predictions.png)
 
 ## Video
 
@@ -95,3 +105,9 @@ https://user-images.githubusercontent.com/43454650/130976514-19a539eb-a68a-482f-
 - If you ave an error file not found for the default geojson file, check :
   - That you are inside "ecoteka-deepforest-demo/" folder
   - That you have placed an "export.geojson" from overpass-turbo.eu (like the one in docs) inside "ecoteka-deepforest-demo/data/" folder
+
+## TODO
+
+- [ ] The predictions are also converted back to the initial coodinates system 
+- [ ] The predictions are converted into points
+- [ ] The points are also converted back to the initial coodinates system 

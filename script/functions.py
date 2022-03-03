@@ -19,16 +19,18 @@ from qgis.core import (
 )
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import QSize, QEventLoop
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 import tifffile
 
 
-def get_polygons(geojson_path: str) -> List[List[List[float]]]:
+def get_polygons(input: str) -> List[List[List[float]]]:
     try:
-        file = open(geojson_path, 'r', encoding="utf-8")
+        file = open(input, 'r', encoding="utf-8")
         file.seek(0)
         geojson = json.loads(file.read())
     except:
+        print(".geojson not found.")
+        print()
         print(
             "Using the default path, please check you are running "
             + "the script from ecoTeka-deepforest-demo folder."
@@ -42,57 +44,11 @@ def get_polygons(geojson_path: str) -> List[List[List[float]]]:
     return polygons
 
 
-def save_polygon(polygon, name):
-    output = {}
-    points = []
-    for coords in polygon:
-        point = {}
-        point["x"] = str(coords[0])
-        point["y"] = str(coords[1])
-        points.append(point)
-    output["points"] = points
-    with open(name+"-polygon.geojson", "w") as file:
-        json.dump(output, file)
-
-
-def get_tile_coord_from_polygon(polygon):
-    xmin = polygon[0][0]
-    xmax = polygon[0][0]
-    ymin = polygon[0][1]
-    ymax = polygon[0][1]
-    for point in polygon:
-        xmin = point[0] if point[0] < xmin else xmin
-        xmax = point[0] if point[0] > xmax else xmax
-        ymin = point[1] if point[1] < ymin else ymin
-        ymax = point[1] if point[1] > ymax else ymax
-    return xmin, ymin, xmax, ymax
-
-
-def convert_coord(x: float, y: float,
-                  input_epsg: int,
-                  output_epsg: int) -> Tuple[float]:
-
-    input_crs = pyproj.CRS.from_epsg(input_epsg)
-    output_crs = pyproj.CRS.from_epsg(output_epsg)
-
-    proj = pyproj.Transformer.from_crs(input_crs, output_crs)
-
-    if input_crs.is_geographic and not output_crs.is_geographic:
-        coord = proj.transform(y, x)
-    else:
-        coord = proj.transform(x, y)
-
-    if output_crs.is_geographic and not input_crs.is_geographic:
-        return coord[1], coord[0]
-    else:
-        return coord[0], coord[1]
-
-
 def get_ign_request() -> str:
 
     WMTS_URL_GETCAP = "https://wxs.ign.fr/decouverte/geoportail/wmts?"\
         "SERVICE%3DWMTS%26REQUEST%3DGetCapabilities"
-    WMTS = WebMapTileService(WMTS_URL_GETCAP)
+    WMTS = WebMapTileService(WMTS_URL_GETCAP, timeout=10)
     LAYER_NAME = "ORTHOIMAGERY.ORTHOPHOTOS"
     WMTS_LAYER = WMTS[LAYER_NAME]
     LAYER_TITLE = WMTS_LAYER.title
@@ -119,8 +75,76 @@ def start_qgis():
     return QGS
 
 
-def end_qgis(QGS):
-    QGS.exitQgis()
+def save_geojson(
+        osm_polygon: List[List[float]],
+        output_path: str,
+        index: Optional[int] = None) -> None:
+    output = {
+        "type": "FeatureCollection",
+        "name": f"polygon{index+1}",
+        "crs": {
+            "type": "name",
+            "properties": {
+                "name": "urn:ogc:def:crs:EPSG::3857"
+            }
+        },
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {
+                    "id": index+1
+                },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": []
+                }
+            }
+        ]
+    }
+
+    for point in osm_polygon:
+        output["features"][0]["geometry"]["coordinates"].append(
+            point
+        )
+
+    filepath = output_path + f"polygon{index or ''}.geojson"
+    with open(filepath, "w") as file:
+        json.dump(output, file, indent=4)
+
+
+def get_tile_coord_from_polygon(polygon: List) -> Tuple[float]:
+    xmin = polygon[0][0]
+    xmax = polygon[0][0]
+    ymin = polygon[0][1]
+    ymax = polygon[0][1]
+    for point in polygon:
+        xmin = point[0] if point[0] < xmin else xmin
+        xmax = point[0] if point[0] > xmax else xmax
+        ymin = point[1] if point[1] < ymin else ymin
+        ymax = point[1] if point[1] > ymax else ymax
+    return xmin, ymin, xmax, ymax
+
+
+def convert_coord(
+        x: float,
+        y: float,
+        input_epsg: int,
+        output_epsg: int) -> Tuple[float]:
+
+    input_crs = pyproj.CRS.from_epsg(input_epsg)
+    output_crs = pyproj.CRS.from_epsg(output_epsg)
+
+    proj = pyproj.Transformer.from_crs(input_crs, output_crs)
+
+    if input_crs.is_geographic and not output_crs.is_geographic:
+        coord = proj.transform(y, x)
+    else:
+        coord = proj.transform(x, y)
+
+    if output_crs.is_geographic and not input_crs.is_geographic:
+        return coord[1], coord[0]
+    else:
+        return coord[0], coord[1]
 
 
 def render_image(
@@ -129,8 +153,9 @@ def render_image(
         ymin: float,
         xmax: float,
         ymax: float,
-        path: str,
-        high_resolution: bool) -> None:
+        output_path: str,
+        high_resolution: bool,
+        index: Optional[int] = None) -> None:
 
     WMTS_LAYER = QgsRasterLayer(
         request, "raster-layer", "wms")
@@ -157,7 +182,7 @@ def render_image(
 
     def finished():
         img = render.renderedImage()
-        img.save(path + ".tiff", "png")
+        img.save(output_path + f"image{index or ''}.tiff", "png")
 
     render.finished.connect(finished)
 
@@ -172,10 +197,14 @@ def render_image(
     return
 
 
-def get_image(path: str) -> numpy.ndarray:
-    image = Image.open(path + ".tiff", 'r')
+def get_image(
+        output_path: str,
+        index: Optional[int] = None) -> numpy.ndarray:
+    image_path = output_path + f"image{index or ''}.tiff"
+    image = Image.open(image_path, 'r')
     numpy_rgba = numpy.array(image).astype('float32')
-    return numpy_rgba[:, :, :3]
+    numpy_rgb = numpy_rgba[:, :, :3]
+    return numpy_rgb
 
 
 def convert_polygon(
@@ -201,7 +230,24 @@ def convert_polygon(
     return numpy.array(polygon_image).astype('int32')
 
 
-def predictions(
+def save_polygon(
+        polygon: numpy.array,
+        output_path: str,
+        index: Optional[int] = None) -> None:
+    output = {}
+    points = []
+    for coords in polygon:
+        point = {}
+        point["x"] = str(coords[0])
+        point["y"] = str(coords[1])
+        points.append(point)
+    output["points"] = points
+    filepath = output_path + f"polygon{index or ''}.json"
+    with open(filepath, "w") as file:
+        json.dump(output, file, indent=4)
+
+
+def make_predictions(
         image: numpy.ndarray,
         high_resolution: bool) -> pandas.DataFrame:
 
@@ -223,6 +269,16 @@ def predictions(
         use_soft_nms=False,
         sigma=0.5,
         thresh=0.001)
+
+
+def save_predictions(
+        predictions: pandas.DataFrame,
+        output_path: str,
+        index: Optional[int] = None) -> None:
+    predictions.to_csv(
+        output_path + f"predictions{index or ''}.csv",
+        index=False
+    )
 
 
 def draw_box(
@@ -256,10 +312,11 @@ def draw_all_boxes(
 
 
 def save_image_predictions(
-        path: str,
+        output_path: str,
         image: numpy.ndarray,
         predictions: pandas.DataFrame,
-        polygon: Optional[List[List[float]]] = None) -> None:
+        polygon: Optional[List[List[float]]] = None,
+        index: Optional[int] = None) -> None:
 
     image_copy = image.copy().astype('uint8')
 
@@ -284,14 +341,34 @@ def save_image_predictions(
                 if ioa > 0.4:
                     boxes.append(predicted_box)
 
-            boxes = pandas.DataFrame(boxes, columns=predictions.columns)
+            boxes = pandas.DataFrame(
+                boxes,
+                columns=predictions.columns
+            )
 
-        cv2.polylines(image_copy, [polygon], True, [255, 0, 0], thickness=10)
+        cv2.polylines(
+            image_copy,
+            [polygon],
+            True,
+            [255, 0, 0],
+            thickness=10
+        )
 
     if boxes is not None:
         draw_all_boxes(image_copy, boxes)
     print(str(len(boxes)) + " predictions inside")
 
-    tifffile.imwrite(path + ".tiff", image_copy)
+    tifffile.imwrite(
+        output_path + f"image-predictions{index or ''}.tiff",
+        image_copy
+    )
+    pyplot.imsave(
+        output_path + f"image-predictions{index or ''}.png",
+        image_copy
+    )
 
     return
+
+
+def end_qgis(QGS):
+    QGS.exitQgis()
