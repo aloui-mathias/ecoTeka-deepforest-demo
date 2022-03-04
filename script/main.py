@@ -78,7 +78,10 @@ if args.example:
     args.output_path = "docs/"
     args.epsg = 4326
 
-osm_polygons = get_polygons(args.input)
+osm_polygons, epsg = get_polygons(args.input)
+
+if epsg:
+    args.epsg = epsg
 
 url_request = get_ign_request()
 

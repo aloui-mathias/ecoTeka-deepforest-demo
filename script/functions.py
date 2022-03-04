@@ -23,7 +23,7 @@ from typing import Dict, List, Optional, Tuple
 import tifffile
 
 
-def get_polygons(input: str) -> List[List[List[float]]]:
+def get_polygons(input: str) -> Tuple[List[List[List[float]]], int]:
     try:
         file = open(input, 'r', encoding="utf-8")
         file.seek(0)
@@ -37,11 +37,22 @@ def get_polygons(input: str) -> List[List[List[float]]]:
         )
         raise
     file.close()
+
     polygons = []
     for feature in geojson['features']:
         if feature['geometry']['type'] == "Polygon":
             polygons.append(feature['geometry']['coordinates'][0])
-    return polygons
+
+    epsg = None
+    crs = geojson.get("crs", None)
+    if crs:
+        prop = crs.get("properties", None)
+        if prop:
+            epsg_data = prop.get("name", None)
+            if epsg_data:
+                epsg = epsg_data.split(":")[-1]
+
+    return [polygons, epsg]
 
 
 def get_ign_request() -> str:
